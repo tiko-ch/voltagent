@@ -171,6 +171,8 @@ export type MCPToolCall = {
    * Arguments to pass to the tool
    */
   arguments: Record<string, unknown>;
+
+  _meta?: Record<string, unknown>;
 };
 
 /**
@@ -201,6 +203,11 @@ export interface MCPClientEvents {
    * Emitted when an error occurs
    */
   error: (error: Error | TransportError) => void;
+
+  /**
+   * Emitted before a tool call is executed
+   */
+  beforeToolCall: (toolCall: MCPToolCall) => void;
 
   /**
    * Emitted when a tool call completes

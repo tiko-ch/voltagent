@@ -163,6 +163,7 @@ export class MCPClient extends EventEmitter {
           name: tool.name,
           description: tool.description || "",
           inputSchema: tool.inputSchema,
+          _meta: tool._meta || {},
         };
       }
       return toolDefinitions;
@@ -190,6 +191,7 @@ export class MCPClient extends EventEmitter {
         name: string;
         description?: string;
         inputSchema: unknown;
+        _meta?: Record<string, unknown>;
       }[]) {
         try {
           const zodSchema = convertJsonSchemaToZod(
@@ -207,6 +209,7 @@ export class MCPClient extends EventEmitter {
                   // Use original method name
                   name: toolDef.name,
                   arguments: args,
+                  _meta: toolDef._meta,
                 });
                 return result.content;
               } catch (execError) {
@@ -240,12 +243,15 @@ export class MCPClient extends EventEmitter {
   async callTool(toolCall: MCPToolCall): Promise<MCPToolResult> {
     // Renamed back from executeRemoteTool
     await this.ensureConnected(); // Use original connection check name
-
     try {
+      // Emit the beforeToolCall event before executing the tool
+      this.emit("beforeToolCall", toolCall);
+
       const result = await this.client.callTool(
         {
           name: toolCall.name,
           arguments: toolCall.arguments,
+          _meta: toolCall._meta,
         },
         CallToolResultSchema,
         { timeout: this.timeout }, // Use original variable name

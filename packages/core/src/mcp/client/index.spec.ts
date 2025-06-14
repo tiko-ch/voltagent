@@ -413,6 +413,12 @@ describe("MCPClient", () => {
         { timeout: expect.any(Number) },
       );
       expect(result).toEqual({ content: "tool-result" });
+      // Verify beforeToolCall was emitted before the tool call
+      expect(toolCallEmitSpy).toHaveBeenCalledWith("beforeToolCall", {
+        name: "testTool",
+        arguments: { param: "value" },
+      });
+      // Verify toolCall was emitted after the tool call
       expect(toolCallEmitSpy).toHaveBeenCalledWith(
         "toolCall",
         "testTool",
@@ -488,21 +494,28 @@ describe("MCPClient", () => {
       const connectHandler = jest.fn();
       const disconnectHandler = jest.fn();
       const errorHandler = jest.fn();
+      const beforeToolCallHandler = jest.fn();
       const toolCallHandler = jest.fn();
 
       client.on("connect", connectHandler);
       client.on("disconnect", disconnectHandler);
       client.on("error", errorHandler);
+      client.on("beforeToolCall", beforeToolCallHandler);
       client.on("toolCall", toolCallHandler);
 
       client.emit("connect");
       client.emit("disconnect");
       client.emit("error", new Error("Test error"));
+      client.emit("beforeToolCall", { name: "testTool", arguments: { param: "value" } });
       client.emit("toolCall", "testTool", { param: "value" }, "result");
 
       expect(connectHandler).toHaveBeenCalled();
       expect(disconnectHandler).toHaveBeenCalled();
       expect(errorHandler).toHaveBeenCalledWith(new Error("Test error"));
+      expect(beforeToolCallHandler).toHaveBeenCalledWith({
+        name: "testTool",
+        arguments: { param: "value" },
+      });
       expect(toolCallHandler).toHaveBeenCalledWith("testTool", { param: "value" }, "result");
     });
   });

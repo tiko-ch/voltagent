@@ -72,6 +72,8 @@ export class Tool<T extends ToolSchema = ToolSchema> /* implements BaseTool<z.in
    */
   readonly execute: (args: z.infer<T>, options?: ToolExecuteOptions) => Promise<unknown>;
 
+  _meta?: Record<string, unknown>;
+
   /**
    * Create a new tool
    */
